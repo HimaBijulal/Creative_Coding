@@ -1,0 +1,118 @@
+var flag = 0;
+var particles = [];
+var spores=[];
+function setup() {
+  createCanvas(1200, 600);
+  for(var i=0; i<200;i++)
+   particles.push(new Particle(random(width),random(height)))
+ 
+}
+
+function draw() {
+  background(0);
+  
+  
+  for (let i = 0; i < particles.length; i++) {
+      //particles[i].clicked(random(width), random(height));
+      particles[i].move();
+       particles[i].display();
+    //for (let j = 0; j < particles.length; j++){
+      //if (i != j && particles[i].check_collision(particles[j]))
+      //{
+        // particles[i].color = color(255,random(11,127),random(11,127));
+       
+     // }
+  //}
+  
+  }}
+  
+function mousePressed() {
+    
+}
+
+function mouseReleased() {
+
+  for(let i=0;i<100;i++){
+    
+    particles.push(new Particle(mouseX, mouseY));
+    //particles[i].clicked(mouseX, mouseY);
+    particles[particles.length -1].clicked(mouseX,mouseY);
+    for (let j = 0; j < particles.length; j++){
+      if (i != j && particles[i].check_collision(particles[j]))
+      {
+         particles[i].color = color(255,random(11,127),random(11,127));
+      }
+  }
+  }
+   for (let i = 0; i < particles.length; i++) {
+       //particles[i].clicked(mouseX, mouseY);
+       //particles[i].move();
+       particles[i].display();
+      for (let j = 0; j < particles.length; j++){
+      if (i != j && particles[i].check_collision(particles[j]))
+      {
+         particles[i].color = color(255,random(11,127),random(11,127));
+       
+      }
+        else{
+          
+         particles[i].color = color(11,255,random(127,245));
+       
+        }
+  }   
+    
+}}
+
+class Particle{
+  
+   constructor(x, y){
+    this.x = x;
+    this.y = y;
+    this.size = random(0,4.5);
+    //this.lumo = random(100,255);
+    //this.color = color(11,255,245);
+     this.color= color(11,255,random(127,245))
+    //this.velx = random(-200,200);
+   // this.vely = random(-200,200);
+    
+  }
+  
+  clicked(x,y){
+    noStroke();
+    this.x = x;
+    this.y = y;
+    //this.lumo = random(100,255);
+    fill(this.color)
+    ellipse(this.x,this.y,this.size);
+    
+  }
+  
+  display(){
+    noStroke();
+    fill(this.color)
+    ellipse(this.x,this.y,this.size);
+  }
+  
+  move(){
+    
+    this.x += 5*random(-5,5);
+    this.y += 5*random(-5,5);
+    
+  }
+  
+  check_collision(other){
+    let distance = dist(this.x, this.y, other.x, other.y);
+    if (distance <= this.size + other.size) {
+    console.log("true")
+    return true;
+      
+    }
+    else{
+      console.log("false")
+      return false;
+    }
+
+    
+  }
+  
+}

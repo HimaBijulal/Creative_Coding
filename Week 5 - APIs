@@ -1,0 +1,56 @@
+// brush stroke inspiration : https://www.youtube.com/watch?v=me04ZrTJqWA
+
+let msg = "https://dog.ceo/api/breeds/image/random";
+//let msg2 = "https://api.giphy.com/v1/gifs/search?";
+let invertflag = true;
+function preload(){
+  msg = loadJSON(msg);
+  
+}
+
+function setup() {
+ var canvas = createCanvas(400,400);
+  
+  img = loadImage(msg.message);
+  img.resize(width, height);
+  //noStroke();
+  console.log(img.width);
+ 
+}
+
+function draw() {
+  
+  if(invertflag){
+    background(220);
+    image(img, 0,0, img.width,img.height);
+    console.log(invertflag)
+    for(let i = 0; i<img.width;i+=10){
+    for(let j=0;j<img.height;j+=10){
+      let c= img.get(i,j)
+      rect(i,j,30,30);
+      fill(color(c))
+    }
+    
+    }
+  }
+  
+  else if(!invertflag){
+    console.log(invertflag)
+     for(let i = 0; i<img.width;i+=10){
+    for(let j=0;j<img.height;j+=10){
+      let c= img.get(i,j)
+      stroke(color(c));
+      strokeWeight(30);
+      point(i,j);
+      //fill(color(c))
+    }
+    
+    }
+  }
+ 
+}
+
+function mousePressed(){
+  
+  invertflag = !invertflag;
+}

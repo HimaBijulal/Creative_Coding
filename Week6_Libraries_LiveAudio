@@ -1,13 +1,14 @@
 //https://editor.p5js.org/hb2480/sketches/eGbsptwuO
 
-let micLevel
+let micLevel;
+let mic;
 function setup() {
   createCanvas(400, 400);
   
   mic = new p5.AudioIn();
   mic.start();
-  amp = new p5.Amplitude();
-  amp.setInput(mic);
+  //amp = new p5.Amplitude();
+  //amp.setInput(mic);
   background(0);
   
 }
@@ -23,3 +24,5 @@ function draw() {
   fill(random(255,255,255), 10);
   ellipse(mouseX, mouseY, micLevel * width , micLevel * width);
 }
+
+  

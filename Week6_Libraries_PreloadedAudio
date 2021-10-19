@@ -1,0 +1,35 @@
+//https://editor.p5js.org/hb2480/sketches/vu5Bnmtv8
+
+
+function preload() {
+    sound = loadSound('looperman-l-2416736-0178266-beethoven.wav');
+}
+function setup() {
+  createCanvas(400, 400);
+  
+ // mic = new p5.AudioIn();
+ // mic.start();
+  amp = new p5.Amplitude();
+  amp.setInput(sound);
+  background(0);
+  sound.loop()
+}
+
+function draw() {
+  
+  let Ampli = amp.getLevel();
+  console.log(Ampli)
+  //let waveform = fft.waveform();
+  
+  stroke(255, 50);
+  fill(random(255,255,255), 10);
+  ellipse(mouseX, mouseY, Ampli * width , Ampli * width);
+}
+function mousePressed() {
+    if (sound.isPlaying() == true) {
+        sound.pause();
+    } else {
+        sound.play();
+    }
+}
+  

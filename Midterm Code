@@ -1,0 +1,206 @@
+//References Used as aesthetic and code inspiration : 
+//https://openprocessing.org/sketch/816186
+//https://openprocessing.org/sketch/983146
+//https://openprocessing.org/sketch/1179185
+//https://openprocessing.org/sketch/983146
+
+
+var animnum=[0,1];
+//var aninum=1;
+var choice=0;
+var angle;
+
+var fr;
+var fft,analyzer,level,bass,treble,mid;
+var blobs = []
+var blobnum = 200;
+var c;
+
+
+var HappyColors = ["#F08DA9","#FEE3B8","#BCE4E3","#A5DAE8","#B9B2DC","#EBC8D5"];
+var HappyColors2 = ["#083d77","#ee964b","#042a2b","#5eb1bf","#cdedf6","#ef7b45","#d84727","#ffdde2","#efd6d2","#ff8cc6","#de369d"];
+DangerColors = ["#9E4D4D","#49003B","#1D1D2F","#220619","#202020"]
+let gap=10;
+
+var scl = 0.01;
+let R;
+let maxR;
+let t = 5;
+let nt = 3;
+let nR = 2;
+let Theta = 1000;
+
+// the code has two audio files. Please feel free to upload any and visualize them.
+function preload(){
+ // audio = loadSound("looperman-l-2416736-0178266-beethoven.wav")
+	audio = loadSound("Moon-Acoustic-Vibes.mp3")
+	
+}
+
+function setup() {
+  c= createCanvas(windowWidth, windowHeight);
+  angleMode(DEGREES);
+	maxR = max(width, height) * 0.45;
+ 
+ colorMode(HSB, 255);
+  noStroke();
+	
+  fft=new p5.FFT()		// use fourier transform to identify the bass, treble and mid values.
+  analyzer=new p5.Amplitude();
+  audio.loop();
+}
+
+function draw() {
+   level = analyzer.getLevel();
+	//let spectrum = fft.analyze();
+  bass = fft.getEnergy("bass"); // need to use instead of amplitude for extension of project
+  treble = fft.getEnergy("treble");
+  mid = fft.getEnergy("mid");
+// switch cases were made to toggle between two kinds of audio visualization
+	 switch (choice) {
+			 // case 0 is a passive audio visualization tool where the user can just sit back and watch the amplitudes being visualized.
+		 case 0:{
+			 				background(0) // we dont want traces being left behind, so we clear background
+							push(); // start of push block
+						 translate(width/2,height/2);
+							rotate(angle)
+							angle= map(level/2,0,0.5,-180,180); // these angles were chosen using trial and error to get the best looking arcs
+
+
+							for(let i=0;i<level*500;i++){			// the loop 
+							noFill();
+							if(level<0.12 )
+						 stroke(random(HappyColors2));
+							else
+						 stroke(random(DangerColors));
+						 arc(0,0,50+(gap*(i+1)),50+(gap*(i+1)),angle*i,360-angle/5);
+						}
+						pop();
+
+						 break;
+			 
+		 				}
+			 // case 1 is a more active form of audio visualization
+			 //where the user can make art with the audio being listened to. The user can also make his own blobs actively using the mouse.
+			case 1:{
+								let R = map(noise(nt * 0.01, nR), 0, 1, 0, maxR); // how much the blob moves around horizontally
+								let t = map(noise(nt * 0.001, Theta), 0, 1, -360, 360); // how many tentacles its sprouting, keep a low number for more relaxing feel and less sharp tangents
+								let x = R * cos(t/30) + width / 2; // deviation angles
+								let y = R * sin(t/30) + height / 2; // deviation angles
+								blobs.push(new blob(x, y));
+
+						 		if (mouseIsPressed) {
+									blobs.push(new blob(mouseX, mouseY)); // when clicked, create new blobs with current amplitude size
+								}
+
+								for (let i = 0; i < blobs.length; i++) { // for each blob in array, display and wrap if necessary
+									blobs[i].update(); // for updating movement parameters of the blob object
+									
+									blobs[i].display(); // to display the blob circles
+									blobs[i].wrap(); // to wrap the blobs when they reach an edge of the canvas
+	
+								}
+
+								for (let j = blobs.length - 1; j >= 0; j--) { // for the crawling effect iterate threw the array
+									if (blobs[j].isFinished()) {
+									 blobs.splice(j, 1);
+									}
+								}
+								nt+=0.5; // speed of blob movement can be controlled with this variable
+
+					 break;
+			}
+	 }
+
+ 
+}
+
+class blob{
+	constructor(x, y) {
+    this.init(x, y);
+  }
+  
+  init(x, y){
+    this.position =createVector(x,y);
+    this.velocity = p5.Vector.random2D();
+    this.acceleration = createVector(0,0);
+		this.t = random(0, scl);
+    this.lifeMax = random(20, 50);
+    this.life = this.lifeMax;
+    this.step = random(0.1, 0.5);
+   // this.dMax = random(level*1000) >= 8 ? 10 : 30;
+    this.dMax = random(level*1000)
+    this.d = this.dMax;
+    this.c = color(random(HappyColors));
+   
+    
+  }
+	
+  //follow(vector){
+   // var x=floor(this.position.x/scl);
+   // var y = floor(this.position.y/scl);
+    //var index = x+y*cols;
+    //var force = vector[index];
+    //this.applyForce(force);
+     
+  //}
+  
+  update(){    // used to make the blobs dynamic in nature
+		let theta = map(noise(this.position.x * scl, this.position.y * scl, this.t), 0, 1, -360, 360);
+    this.velocity.x=cos(theta);
+		this.velocity.x=sin(theta);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+  }
+  
+  applyForce(force){   // next step is to make the blobs react with other blobs
+    this.acceleration.add(force);    
+  }
+	
+	isFinished() {		// this function checks if the blobs have fizzled out or not. Once the blobs are done
+    this.life -= this.step;
+    this.d = map(this.life, 0, this.lifeMax, 0, this.dMax);
+    if (this.life < 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  display(){
+     fill(this.c);
+
+    circle(this.position.x, this.position.y, this.d);
+  }
+  wrap(){			// this function was made to make sure that the blobs that cross the edges wrap around the other edge
+    if(this.position.x>width)
+      this.position.x=0;
+    if(this.position.x<0)
+      this.position.x=width;
+    
+    
+    if(this.position.y>height)
+      this.position.y=0;
+    if(this.position.y<0)
+      this.position.y=height;
+    
+  }
+
+}
+// the function was made to define keyboard interactions: Enter to toggle between two visualizers
+// Shift to save artwork
+function keyPressed() {	
+  if (keyCode === ENTER) {
+    background(0)
+    //console.log(choice)
+    choice++;
+  
+  if (choice == 2){
+    choice = 0;
+  }
+  }
+	if (keyCode === SHIFT) {
+		saveCanvas(c, 'myCanvas.jpg');
+	}
+    
+}

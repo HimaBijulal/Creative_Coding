@@ -1,0 +1,91 @@
+
+// color mixing with common cathode rgb led
+
+const int rPin = 4;
+const int gPin = 3;
+const int bPin = 2;
+const int button1 = 5;
+const int button2 = 6;
+int compat_score=0;
+int counter =0;
+int gamestate=0;
+void setup() {
+  
+  // set the pinmodes
+  pinMode(rPin, OUTPUT);
+  pinMode(gPin, OUTPUT);
+ // pinMode(bPin, OUTPUT);
+  pinMode(button1,INPUT);
+  pinMode(button2,INPUT);
+  delay(1000);
+  Serial.println("Welcome to the Love Compatability Test");
+  delay(3000);
+  Serial.println("Here you will get 5 chances to interact with a button each at the same time.");
+  delay(3000);
+  Serial.println("If you both press or unpress at the same time, your score increases, else you lose a point.");
+  delay(3000);
+  Serial.println("This game is all about eye contact and about being able to read your partners mind.");
+  delay(3000);
+  Serial.println("Take a deeep breath .....5");
+  delay(1000);
+  Serial.println("4.....");
+  delay(1000);
+  Serial.println("3.....");
+  delay(1000);
+  Serial.println("2.....");
+  delay(1000);
+  Serial.println("1.....");
+  delay(1000);
+  Serial.println("GO.....");
+  delay(1000);
+  gamestate=1;
+  
+ 
+}
+
+void loop() {
+  while(counter<5 && gamestate==1){
+  // put your main code here, to run repeatedly:
+ int  buttonState1 = digitalRead(button1);
+  int buttonState2 = digitalRead(button2);
+  if(buttonState1==HIGH && buttonState2==HIGH){// BOTH BUTTONS PUSHED
+    compat_score=compat_score+1;
+    //brightness = brightness + interval;
+    
+  }
+  else if (buttonState1==LOW && buttonState2==LOW){
+    compat_score=compat_score+1;
+    //brightness = brightness + interval;
+  }
+
+  else if (buttonState1== HIGH && buttonState2==LOW){
+    compat_score=compat_score-1;
+    //brightness = brightness - interval;
+  }
+  else {
+    compat_score=compat_score-1;
+   // brightness = brightness - interval;
+  }
+  Serial.print("Player 1: ");
+  Serial.println(buttonState1);
+  Serial.print("Player 2: ");
+  Serial.println(buttonState2);
+  Serial.print("COMPAT SCORE IS: ");
+  Serial.println(compat_score);
+  delay(5000);
+  counter=counter+1;
+  }
+
+  
+  if(compat_score < 0 && gamestate==1 ){
+    Serial.println(" GAME OVER: NOT COMPATIBLE AT ALL");
+    analogWrite(rPin, 255);
+    
+  }
+  else if(gamestate==1){
+     Serial.println(" GAME OVER");
+      analogWrite(gPin, map(compat_score, 0, 5, 0, 127));
+  }
+ 
+  gamestate=0;
+}

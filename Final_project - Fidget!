@@ -1,0 +1,232 @@
+//references used: https://openprocessing.org/sketch/838545
+//https://openprocessing.org/sketch/758424
+//https://openprocessing.org/sketch/935348
+//https://openprocessing.org/sketch/1226242
+//https://openprocessing.org/sketch/1220981
+//https://openprocessing.org/sketch/1362060
+
+let hue, sat, bri, alpha;
+let hueSpeed, satSpeed, briSpeed;
+let kMax;
+let increment = 0.1;
+let step = 1;
+let n = 100;
+let radius = 0;
+let maxNoise = 500;
+let easing = 0.05;
+const handle_len_rate = 3;
+const maxDistance = 200;
+let t = [];
+var try2 = ["#9b5de5","#f15bb5","#fee440","#00f5d4","#000000"];
+var colorPalette = ["#02073c", "#5b0ff5", "#f50fac", "#f50fac"];
+var HappyColors = ["#F08DA9","#FEE3B8","#BCE4E3","#A5DAE8","#B9B2DC","#EBC8D5"];
+var HappyColors2 = ["#083d77","#ee964b","#042a2b","#5eb1bf","#cdedf6","#ef7b45","#d84727","#ffdde2","#efd6d2","#ff8cc6","#de369d"];
+let colors = "083d77-ee964b-042a2b-5eb1bf-cdedf6-ef7b45-d84727-ffdde2-efd6d2-ff8cc6-de369d".split("-").map(a=>"#"+a)
+
+
+
+function setup() {
+  
+  
+  createCanvas(windowWidth, windowHeight); // comment
+  const num = 2;// CHANGE THIS VALUE TO SEE DIFFERENT PATTERNS
+  const span = (windowWidth,windowHeight)/num;
+  
+  let lines = [];
+  for(let i = 0;i<HappyColors2.length;i++){
+    lines.push({sw : width / 50 + i, k : random(0.01, 0.3), d : random(0.8, 0.9), c: HappyColors2[i]});
+  }
+  
+  for(let i =0;i<lines.length;i++){
+    const sw = lines[i].sw;
+    const k =lines[i].k;
+    const d= lines[i].d;
+    const c = lines[i].c;
+    randomSeed(0);
+    
+    for(let y =0;y<height;y+=span){
+      for(let x = 0;x<width;x+=span){
+        const rn = random();
+
+				if(rn < 0.3)
+				{
+					t.push(new Arc(x, y, span / 2, 0, PI/2, sw, k, d, c));
+					t.push(new Arc(x + span, y + span, span / 2, PI, HALF_PI * 6, sw, k, d, c));
+				}else{
+					t.push(new Arc(x + span, y, span / 2, PI / 2, PI, sw, k, d, c));
+					t.push(new Arc(x, y + span, span / 2, HALF_PI * 3, TAU, sw, k, d, c));
+				}
+        
+      }
+      
+    }
+    
+  }
+
+  noStroke();
+}
+
+function draw() {
+  
+ colorMode(HSB,1);
+  angleMode(DEGREES);
+  hue = random(256);
+  sat = random(128, 256);
+  bri = random(128, 256);
+  hueSpeed = 0.4;
+  satSpeed = 0.1;
+  briSpeed = 0.1;
+  alpha = 2;
+  noFill();
+  kMax = random(0.8,1.0);
+ 
+  for(const i of t)
+	{
+		i.update();
+		i.display();
+	}
+  
+}
+
+// Class values and math inspired from and modified after from //https://openprocessing.org/sketch/935348
+class Arc
+{
+	constructor(xcor, ycor,radius, rad, radEnd, sw = 20, k = 0.1, d = 0.9, c = "FFFFFF")
+	{
+		this.dot = [];
+		const radSpan = TAU / 30;
+		
+		for(let r = rad; r < radEnd; r += radSpan)
+		  this.dot.push(new Dot(xcor + cos(r) * radius, ycor + sin(r) * radius, k, d));
+		
+	
+		this.dot.push(new Dot(xcor + cos(radEnd) * radius, ycor + sin(radEnd) * radius, k, d));
+		
+		this.col = c;
+		this.sw = sw;
+	}
+	
+	
+	update()
+	{
+		for(const i of this.dot)
+		{
+			i.update();
+		}
+	}
+	
+	display()
+	{
+		noFill();
+		stroke(this.col);
+		strokeWeight(this.sw);
+		beginShape();
+		
+		let pos = this.dot[0].getPosition();
+		curveVertex(pos.xcor, pos.ycor);
+		
+		for(let i = 0; i < this.dot.length; i++)
+		{
+			pos = this.dot[i % this.dot.length].getPosition();
+			curveVertex(pos.x, pos.y);
+		}
+		curveVertex(pos.x, pos.y);
+		endShape();
+		
+	}	
+	
+
+}
+
+//Class values and math inspired from and modified after from //https://openprocessing.org/sketch/935348
+class Dot{
+  
+  constructor(x,y,k,d){
+    this.currentpos = createVector(x,y);
+    this.tarp = createVector(x,y);
+    this.pos = createVector(x,y);
+    this.vel = createVector(0,0);
+    this.spk = k;
+    this.spdamp = d;
+  }
+  
+  update(){
+    if(mouseIsPressed){
+		const mp = createVector(mouseX, mouseY);
+		const subV = p5.Vector.sub(this.currentpos, mp);
+		const d = subV.mag();
+		const mul = (min(width, height) / 2) / max(pow(subV.mag(), 1.5), 5);
+		this.tarp =  p5.Vector.add(this.currentpos, p5.Vector.mult(subV, mul));
+		}else
+		{
+			this.tarp = this.currentpos.copy();
+          background(0);
+  //hue = (hue + hueSpeed) % 256; //noise(hueNoise)*256;
+  //sat = constrain(sat + satSpeed, 0, 255);
+  //bri = constrain(bri + briSpeed, 0, 255);
+  //background(0,0,0);
+  //let time = frameCount/300;
+  //for(let i =n;i>0;i--){
+   // let alpha = 1 - (i/n);
+   // fill((alpha/5 + 0.75)%1, sat, bri, alpha);
+    //fill((20/5 + 0.75)%1, sat, bri, alpha);
+    //let size = radius+i*0.05;
+    //let k = kMax * sqrt(i/n);
+    //let noisiness = maxNoise * (i/n);
+   // blob(size,width/2,height/2,k,time-1*increment,noisiness);
+   // blob(size,width - step*random(5),height - step*random(5),k,time-1*increment,noisiness);
+     //blob(size,width - step*random(-5,5),height - step*random(-5,5),k,time-1*increment,noisiness);
+     //blob(size,width - step*random(-5,5),height - step*random(-5,5),k,time-1*increment,noisiness);
+    
+  }
+ 
+		
+		this.updateSpring();
+  }
+  updateSpring(){
+    
+    const kconst = this.spk;
+    
+    let force = p5.Vector.sub(this.tarp,this.pos).mult(kconst);
+    const damp = this.spdamp;
+    this.vel.add(force).mult(damp);
+	this.pos.add(this.vel);
+  }
+  
+  getPosition(){
+    return this.pos;
+  }
+  
+  display()
+	{
+		noStroke();
+		fill(0);
+		push();
+		translate(this.pos);
+		circle(0, 0, 4);
+		pop();
+	}
+  
+}
+
+
+function blob(size,xc,yc,k,t,noisiness){
+  
+  beginShape();
+  let angleStep = 360/10;
+  for(let theta =0;theta<=360 +2*angleStep;theta+=angleStep){
+    let r1, r2;
+    r1 = cos(theta)+1;
+    r2 = sin(theta)+1;
+    let r = size + noise(k*r1,k*r2,t)*noisiness;
+    let x = xc+r*cos(theta);
+    let y = yc + r*sin(theta);
+    curveVertex(x,y);
+    
+    
+  }
+  
+  endShape();
+  
+  
+}
